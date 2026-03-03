@@ -33,13 +33,14 @@ const login = async (req, res) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       ACCESS_TOKEN_SECRET_SIGNATURE,
-      // 5 // 5 giây
-      '1h'
+      5 // 5 giây
+      // '1h'
     )
 
     const refreshToken = await JwtProvider.generateToken(
       userInfo,
       REFRESH_TOKEN_SECRET_SIGNATURE,
+      // 15 // 15 giây
       '14 days'
     )
 
@@ -109,8 +110,8 @@ const refreshToken = async (req, res) => {
     const accessToken = await JwtProvider.generateToken(
       userInfo,
       ACCESS_TOKEN_SECRET_SIGNATURE,
-      // 5 // 5 giây
-      '1h'
+      5 // 5 giây
+      // '1h'
     )
 
     // Res lại cookie accessToken mới cho trường hợp sử dụng cookie

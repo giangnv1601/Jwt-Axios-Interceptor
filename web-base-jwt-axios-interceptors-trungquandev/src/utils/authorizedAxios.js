@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { handleLogoutAPI, refreshTokenAPI } from '~/api'
 
 // Khởi tạo một đối tượng Axios (authorizedAxiosInstance) mục đích để custom và cấu hình chung cho dự án.
 
@@ -39,7 +40,53 @@ authorizedAxiosInstance.interceptors.response.use((response) => {
     /* Mọi mã http status code nằm ngoài khoảng 200 - 299 sẽ là error và rơi vào đây */
     // Do something with response error
 
-    console.log(error)
+    /** Khu vực Quan trọng: Xử lý Refresh Token tự động */
+    // Nếu như nhận mã 401 từ BE, thì gọi api logout luôn
+    if (error.response?.status === 401) {
+      handleLogoutAPI().then(() => {
+        // Nếu trường hợp dùng cookie thì nhớ xóa userInfo trong localstorege
+        // localStorage.removeItem('userInfo')
+
+        // Cuối cùng điều hướng tới trang Login sau khi logout thành công
+        location.href = '/login'
+      })
+    }
+    // Nếu như nhận mã 410 từ BE, thì sẽ gọi api refresh token để làm mới lại accessToken
+    // Đầu tiên lấy được các requst API đang bị lỗi thông qua error.config
+    const originalRequest = error.config
+    // console.log('originalRequest: ', originalRequest)
+    if (error.response?.status === 410 && !originalRequest._retry) {
+      // Gán thêm một giá trị _retry luôn = true trong khoảng thời gian chờ, về việc refresh token này chỉ luôn gọi 1 lần tại 1 thời điểm
+      originalRequest._retry = true
+
+      // Lấy refreshToken từ localstorage (cho trường hợp localstorage)
+      const refreshToken = localStorage.getItem('refreshToken')
+      // Gọi API refreshToken
+      return refreshTokenAPI(refreshToken)
+        .then((res) => {
+          // Lấy và gán lại accessToken vào localstorage (cho trường hợp localstorage)
+          const { accessToken } = res.data
+          localStorage.setItem('accessToken', accessToken)
+          authorizedAxiosInstance.defaults.headers.Authorization = `Bearer ${accessToken}`
+
+          // Đồng thời lưu ý là accessToken cũng đã được update lại ở Cookie rồi nhé (cho trường hợp cookie)
+
+          // Bước cuối cùng Quan trọng: return lại axios instance để chúng ta kết hợp cái originalConfig để gọi lại những api ban đầu bị lỗi
+          return authorizedAxiosInstance(originalRequest)
+        })
+        .catch((error) => {
+          // Nếu nhận được bất kỳ lỗi nào từ api refresh token thì cứ logout luôn
+          handleLogoutAPI().then(() => {
+            // Nếu trường hợp dùng cookie thì nhớ xóa userInfo trong localstorege
+            // localStorage.removeItem('userInfo')
+
+            // Cuối cùng điều hướng tới trang Login sau khi logout thành công
+            location.href = '/login'
+          })
+          return Promise.reject(error)
+        })
+    }
+
     // Xử lý tập trung phần hiển thị thông báo lỗi trả về từ mọi API ở đây (viết code 1 lần: Clean Code)
     // console.log(error) ra là sẽ thấy cấu trúc data dẫn tới message lỗi như dưới đây
     // Dùng toastify để hiển thị bất kể mọi mã lỗi lên màn hình - Ngoài trừ mã 410 - GONE phục vụ việc tự động refresh lại token.
