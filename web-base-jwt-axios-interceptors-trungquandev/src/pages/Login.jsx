@@ -9,17 +9,28 @@ import { useForm } from 'react-hook-form'
 import Typography from '@mui/material/Typography'
 import TrungQuanDevIcon from '../assets/trungquandev-logo.png'
 import authorizedAxiosInstance from '~/utils/authorizedAxios'
-import { toast } from 'react-toastify'
 import { API_ROOT } from '~/utils/constants'
+import { useNavigate } from 'react-router-dom'
 
 function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm()
+  const navigate = useNavigate()
 
   const submitLogIn = async (data) => {
-    // console.log('submit login: ', data)
     const res = await authorizedAxiosInstance.post(`${API_ROOT}/v1/users/login`, data)
-    // console.log(res.data)
-    toast.success(res.data?.message)
+    console.log(res.data)
+    const userInfo = {
+      id: res.data.id,
+      email: res.data.email,
+    }
+    // Lưu token và thông tin của User vào Localstorage, dùng JS thuần
+    // Giới thiệu thêm kiến thức customHook (https://usehooks.com/uselocalstorage))
+    localStorage.setItem('accessToken', res.data.accessToken)
+    localStorage.setItem('refreshToken', res.data.refreshToken)
+    localStorage.setItem('userInfo', JSON.stringify(userInfo))
+
+    // Điều hướng tới trang Dashboard khi login thành công
+    navigate('/dashboard')
   }
 
   return (
