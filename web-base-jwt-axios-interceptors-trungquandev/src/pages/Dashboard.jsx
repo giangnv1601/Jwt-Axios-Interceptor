@@ -25,12 +25,25 @@ function Dashboard() {
     fetchData()
   }, [])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      await authorizedAxiosInstance.get(`${API_ROOT}/v1/dashboards/access`)
-    }
-    fetchData()
-  }, [])
+  /* Đoạn này để test refresh_token bị gọi lại nhiều lần khi gọi nhiều api đồng thời */
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     await authorizedAxiosInstance.get(`${API_ROOT}/v1/dashboards/access`)
+  //   }
+  //   fetchData()
+  // }, [])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     await authorizedAxiosInstance.get(`${API_ROOT}/v1/dashboards/access`)
+  //   }
+  //   fetchData()
+  // }, [])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     await authorizedAxiosInstance.get(`${API_ROOT}/v1/dashboards/access`)
+  //   }
+  //   fetchData()
+  // }, [])
 
   const handleLogout = async () => {
     // Gọi API Logout

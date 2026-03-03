@@ -40,8 +40,8 @@ const login = async (req, res) => {
     const refreshToken = await JwtProvider.generateToken(
       userInfo,
       REFRESH_TOKEN_SECRET_SIGNATURE,
-      // 15 // 15 giây
-      '14 days'
+      15 // 15 giây
+      // '14 days'
     )
 
     /**
