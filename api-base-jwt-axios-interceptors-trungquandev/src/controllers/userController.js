@@ -74,7 +74,10 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    // Do something
+    // Xóa cookie --> đơn giản là làm ngược lại so với việc gán cookie ở hàm login
+    res.clearCookie('accessToken')
+    res.clearCookie('refreshToken')
+    
     res.status(StatusCodes.OK).json({ message: 'Logout API success!' })
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error)
